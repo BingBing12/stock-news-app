@@ -22,8 +22,8 @@ stock_data = response.json()
 close_data = stock_data["Time Series (Daily)"]
 yesterday_close = float(close_data.popitem()[1]["4. close"])
 previous_close = float(close_data.popitem()[1]["4. close"])
-stock_difference = (abs(yesterday_close - previous_close) / yesterday_close) * 100
-if stock_difference >= 1:
+stock_difference = round((abs(yesterday_close - previous_close) / yesterday_close) * 100)
+if stock_difference >= 5:
     news_response = requests.get(news_endpoint, params=news_params)
     news_response.raise_for_status()
     news_data = news_response.json()["articles"][:3]
