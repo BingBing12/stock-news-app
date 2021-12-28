@@ -1,5 +1,6 @@
 import requests
 import keys
+from twilio.rest import Client
 
 STOCK = "TSLA"
 COMPANY_NAME = "Tesla Inc"
@@ -21,29 +22,26 @@ stock_data = response.json()
 close_data = stock_data["Time Series (Daily)"]
 yesterday_close = float(close_data.popitem()[1]["4. close"])
 previous_close = float(close_data.popitem()[1]["4. close"])
-stock_difference = (abs(yesterday_close-previous_close)/yesterday_close)*100
+stock_difference = (abs(yesterday_close - previous_close) / yesterday_close) * 100
 if stock_difference >= 1:
     news_response = requests.get(news_endpoint, params=news_params)
     news_response.raise_for_status()
-    news_data = news_response.json()["articles"]
-    print(news_data[:3])
+    news_data = news_response.json()["articles"][:3]
 
-
-
-
-
-## STEP 3: alert user
-
-
-
-#some formatting
-"""
-TSLA: 🔺2%
-Headline: Were Hedge Funds Right About Piling Into Tesla Inc. (TSLA)?. 
-Brief: We at Insider Monkey have gone over 821 13F filings that hedge funds and prominent investors are required to file by the SEC The 13F filings show the funds' and investors' portfolio positions as of March 31st, near the height of the coronavirus market crash.
-or
-"TSLA: 🔻5%
-Headline: Were Hedge Funds Right About Piling Into Tesla Inc. (TSLA)?. 
-Brief: We at Insider Monkey have gone over 821 13F filings that hedge funds and prominent investors are required to file by the SEC The 13F filings show the funds' and investors' portfolio positions as of March 31st, near the height of the coronavirus market crash.
-"""
+    account_sid = keys.sid
+    auth_token = keys.auth
+    client = Client(account_sid, auth_token)
+    for news in news_data:
+        if yesterday_close > previous_close:
+            symbol = "🔺"
+        else:
+            symbol = "🔻"
+        text = f"{STOCK}: {symbol}{stock_difference} Headline: {news['title']} Brief: {news['description']}"
+        print(text)
+        message = client.messages.create(
+            body=text,
+            from_=keys.phone,
+            to=keys.verified_phone
+        )
+        print(message.status)
 
