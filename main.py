@@ -9,20 +9,27 @@ stock_params = {
     "apikey": keys.stock_key,
     "symbol": STOCK
 }
-
+news_params = {
+    "apiKey": keys.news_key,
+    "qInTitle": COMPANY_NAME
+}
 stock_endpoint = "https://www.alphavantage.co/query"
+news_endpoint = "https://newsapi.org/v2/everything"
 response = requests.get(stock_endpoint, params=stock_params)
 response.raise_for_status()
 stock_data = response.json()
 close_data = stock_data["Time Series (Daily)"]
 yesterday_close = float(close_data.popitem()[1]["4. close"])
 previous_close = float(close_data.popitem()[1]["4. close"])
-stock_difference = ((yesterday_close-previous_close)/yesterday_close)*100
-if stock_difference >= 5:
-    print("get news")
+stock_difference = (abs(yesterday_close-previous_close)/yesterday_close)*100
+if stock_difference >= 1:
+    news_response = requests.get(news_endpoint, params=news_params)
+    news_response.raise_for_status()
+    news_data = news_response.json()["articles"]
+    print(news_data[:3])
 
 
-## STEP 2: Use https://newsapi.org to get relevant news
+
 
 
 ## STEP 3: alert user
